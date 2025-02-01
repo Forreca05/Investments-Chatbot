@@ -34,17 +34,24 @@ class TokenChunking(ChunkingBase):
  
 
 
-def text_to_chunks(text: str, chunk_size:int = 512) -> list[str]:
-    """Splits text into chunks of a specified size.
+def text_to_chunks(text: str, chunk_size: int = 512, chunk_overlap: int = 100) -> list[str]:
+    """
+    Splits text into chunks of a specified size.
 
     Args:
         text (str): The text to split into chunks.
-        chunk_size (int): The desired size of each chunk (default is 512 words).
+        chunk_size (int): The desired size of each chunk (default is 512 tokens).
+        chunk_overlap (int): The overlap between chunks (default is 100 tokens).
 
     Returns:
         list: A list of text chunks.
     """
-    #TODO Find a better way to chunk
+    # Create an instance of TokenChunking with custom chunk size and overlap
     chunker = TokenChunking()
+    chunker.DEFAULT_CHUNK_SIZE = chunk_size
+    chunker.DEFAULT_CHUNK_OVERLAP = chunk_overlap
+
+    # Get the chunks from the text
     chunks = chunker.get_chunks_from_text(text)
+    
     return chunks
