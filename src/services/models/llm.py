@@ -1,8 +1,11 @@
 import openai
 import os
+from dotenv import load_dotenv
 
+# Carregando variáveis de ambiente do arquivo .env
+load_dotenv(override=True)
 
-class LLM():
+class LLM:
     """Handles interactions with the OpenAI LLM (Large Language Model).
 
     Attributes:
@@ -12,17 +15,15 @@ class LLM():
     Methods:
         get_response(history, context, user_input): Generates a response from the LLM based on the conversation history, context, and user input.
     """
+    
     def __init__(self):
         """Initializes the LLM class with OpenAI client and model information."""
-        # OpenAI client setup
+        # Configuração do cliente OpenAI
         openai.api_key = os.getenv("LLM_API_KEY")
-        
-        self.model_name = os.getenv("LLM_MODEL_NAME")
-
-
+        self.model_name = os.getenv("LLM_MODEL_NAME", "gpt-4")
 
     def get_response(self, history, context, user_input):
-        """Generates a response from the LLM.
+        """Generates a response from the LLM with streaming support.
 
         Args:
             history (list): A list of previous messages in the conversation history.
@@ -32,10 +33,6 @@ class LLM():
         Returns:
             str: The LLM's generated response.
         """
-        #XXX: NOT IMPLEMENTED. Use openai.chat.completions to create the chatbot response
-        
-        #TODO (EXTRA: stream LLM response)
-
         messages = [
             {"role": "system", "content": context},
         ] + history + [
@@ -50,11 +47,10 @@ class LLM():
 
         full_response = ""
         for event in response:
-            if 'choices' in event and len(event['choices']) > 0:
-                delta = event['choices'][0]['delta']
-                if 'content' in delta:
-                    full_response += delta['content']
-
+            if event.get("choices"):
+                delta = event["choices"][0].get("delta", {})
+                if "content" in delta:
+                    full_response += delta["content"]
+                    print(delta["content"], end="", flush=True)  # Print response in real-time
+        
         return full_response
-
-

@@ -1,16 +1,14 @@
+import os
+import openai
 from dotenv import load_dotenv
-load_dotenv(override=True)
-
-import faiss
 from src.services.models.embeddings import Embeddings
 from src.services.vectorial_db.faiss_index import FAISSIndex
-from src.ingestion.ingest_files import ingest_files_data_folder
 from src.services.models.llm import LLM
-import os
-from dotenv import load_dotenv
-import time
 
-def rag_chatbot(llm: LLM, input_text:str, history: list, index: FAISSIndex):
+# Carregando variáveis de ambiente do arquivo .env
+load_dotenv(override=True)
+
+def rag_chatbot(llm: LLM, input_text: str, history: list, index: FAISSIndex):
     """Retrieves relevant information from the FAISS index, generates a response using the LLM, and manages the conversation history.
 
     Args:
@@ -22,39 +20,49 @@ def rag_chatbot(llm: LLM, input_text:str, history: list, index: FAISSIndex):
     Returns:
         tuple: A tuple containing the AI's response and the updated conversation history.
     """
-
-    #TODO Retrieve context from the FAISS Index
     
-    #TODO Pass retrieve context to the LLM as well as history
-
-    #TODO History management: add user query and response to history
+    # Step 1: Convert input_text into embeddings
+    input_embedding = index.embeddings(input_text)
     
-    return "_AI Response Placeholder_", history
+    # Step 2: Retrieve the most relevant documents from FAISS index
+    retrieved_context = index.retrieve_chunks(input_text, num_chunks=3)
+
+    # Step 3: Format context for LLM input
+    context_text = "\n".join(retrieved_context)
+    
+    # Step 4: Pass retrieved context and history to the LLM
+    ai_response = llm.get_response(history, context_text, input_text)
+    
+    # Step 5: Update history with user input and AI response
+    history.append({"user": input_text, "ai": ai_response})
+    
+    return ai_response, history
 
 
 def main():
     """Main function to run the chatbot."""
-
-    embeddings = Embeddings()
     
+    # Carregar embeddings e o índice FAISS
+    embeddings = Embeddings()
     index = FAISSIndex(embeddings=embeddings.get_embeddings)
-
+    
     try:
         index.load_index()
     except FileNotFoundError:
         raise ValueError("Index not found. You must ingest documents first.")
-
+    
+    # Inicializar LLM e histórico de conversa
     llm = LLM()
     history = []
-    print("\n# INTIALIZED CHATBOT #")
-
+    print("\n# INITIALIZED CHATBOT #")
+    
     while True:
         user_input = str(input("You:  "))
         if user_input.lower() == "exit":
             break
         response, history = rag_chatbot(llm, user_input, history, index)
         
-        print("AI: ", response)
+        print("AI:", response)
 
 
 if __name__ == "__main__":
