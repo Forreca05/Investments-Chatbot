@@ -33,7 +33,28 @@ class LLM():
             str: The LLM's generated response.
         """
         #XXX: NOT IMPLEMENTED. Use openai.chat.completions to create the chatbot response
-
+        
         #TODO (EXTRA: stream LLM response)
 
-        return "<AI RESPONSE PLACEHOLDER>"
+        messages = [
+            {"role": "system", "content": context},
+        ] + history + [
+            {"role": "user", "content": user_input},
+        ]
+
+        response = openai.ChatCompletion.create(
+            model=self.model_name,
+            messages=messages,
+            stream=True
+        )
+
+        full_response = ""
+        for event in response:
+            if 'choices' in event and len(event['choices']) > 0:
+                delta = event['choices'][0]['delta']
+                if 'content' in delta:
+                    full_response += delta['content']
+
+        return full_response
+
+
