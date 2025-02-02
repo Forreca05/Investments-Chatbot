@@ -28,9 +28,9 @@ class Embeddings:
         Returns:
             list: A list of floats representing the text embedding.
         """
-        completion = openai.embeddings.create(
+        response = openai.embeddings.create(
             input=text,
             model=self.model
         )
-        
-        return completion.data[0].embedding
+        return response.data[0].embedding  # <- Acessando os atributos corretamente
+

@@ -31,10 +31,12 @@ def rag_chatbot(llm: LLM, input_text: str, history: list, index: FAISSIndex):
     context_text = "\n".join(retrieved_context)
     
     # Step 4: Pass retrieved context and history to the LLM
-    ai_response = llm.get_response(history, context_text, input_text)
+    response_list = llm.get_response(history, context_text, input_text)
+    ai_response = response_list[0]["content"]  # Aqui pegamos o conteúdo da primeira mensagem
     
     # Step 5: Update history with user input and AI response
-    history.append({"user": input_text, "ai": ai_response})
+    history.append({"role": "user", "content": input_text})
+    history.append({"role": "assistant", "content": ai_response})
     
     return ai_response, history
 
@@ -62,7 +64,7 @@ def main():
             break
         response, history = rag_chatbot(llm, user_input, history, index)
         
-        print("AI:", response)
+        print("AI:", response.strip())
 
 
 if __name__ == "__main__":

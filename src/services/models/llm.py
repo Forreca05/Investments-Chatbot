@@ -1,4 +1,5 @@
 import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
@@ -6,51 +7,28 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 class LLM:
-    """Handles interactions with the OpenAI LLM (Large Language Model).
+    """Handles interactions with the OpenAI LLM (Large Language Model)."""
 
-    Attributes:
-        client (OpenAI): The OpenAI client instance.
-        model_name (str): The name of the OpenAI LLM model to use.
-
-    Methods:
-        get_response(history, context, user_input): Generates a response from the LLM based on the conversation history, context, and user input.
-    """
-    
     def __init__(self):
-        """Initializes the LLM class with OpenAI client and model information."""
-        # Configuração do cliente OpenAI
-        openai.api_key = os.getenv("LLM_API_KEY")
+        """Inicializa o cliente OpenAI e define o modelo."""
+        self.api_key = os.getenv("LLM_API_KEY")  # Garante que API Key está carregada
         self.model_name = os.getenv("LLM_MODEL_NAME", "gpt-4")
 
     def get_response(self, history, context, user_input):
-        """Generates a response from the LLM with streaming support.
-
-        Args:
-            history (list): A list of previous messages in the conversation history.
-            context (str): Relevant information from the knowledge base to provide context to the LLM.
-            user_input (str): The user's current input.
-
-        Returns:
-            str: The LLM's generated response.
-        """
+        """Gera uma resposta do LLM."""
         messages = [
             {"role": "system", "content": context},
         ] + history + [
             {"role": "user", "content": user_input},
         ]
 
-        response = openai.ChatCompletion.create(
-            model=self.model_name,
+        # Passando a API Key ao criar o cliente ✅
+        client = OpenAI(api_key=self.api_key)
+
+        response = client.chat.completions.create(
+            model=self.model_name,  # Usa modelo configurado
             messages=messages,
-            stream=True
+            temperature=0.7
         )
 
-        full_response = ""
-        for event in response:
-            if event.get("choices"):
-                delta = event["choices"][0].get("delta", {})
-                if "content" in delta:
-                    full_response += delta["content"]
-                    print(delta["content"], end="", flush=True)  # Print response in real-time
-        
-        return full_response
+        return [{"role": "assistant", "content": response.choices[0].message.content}]
