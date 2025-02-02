@@ -2,6 +2,7 @@ from main import rag_chatbot
 import gradio as gr
 import time
 import os
+from src.ingestion.loaders.loaderPDF import LoaderPDF
 from src.ingestion.ingest_files import ingest_files_data_folder
 from src.services.models.embeddings import Embeddings
 from src.services.models.llm import LLM
@@ -34,9 +35,14 @@ def chatbot_wrapper(input_text, history):
     if history is None:
         history = []
 
-    _, updated_history = rag_chatbot(llm, input_text, history[:-1], index) # Call the main chatbot function with previous history.
-
-    return updated_history, ""  # Return updated history and empty string.
+    # Gerar a resposta do LLM com o histórico
+    context = "Você é um assistente que ajuda com informações. Como posso te ajudar?"  # Altere conforme o necessário
+    response = llm.get_response(history, context, input_text)
+    
+    # Adiciona a resposta do modelo ao histórico
+    updated_history = history + [{"role": "assistant", "content": response[0]["content"]}]
+    
+    return updated_history, ""  # Retorna o histórico atualizado
 
 
 def add_user_text(history, txt):
@@ -69,8 +75,23 @@ def update_max_tokens(max_tokens):
 
 
 def add_file(history, file_obj):
-    """Placeholder function for handling file uploads."""
+    """Processa o upload de arquivos e adiciona o conteúdo ao histórico."""
+    # Verifica se o arquivo é um PDF
+    if file_obj.name.endswith('.pdf'):
+        # Cria um caminho temporário para salvar o arquivo
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(file_obj.read())
+            temp_file_path = temp_file.name
+
+        # Carrega o PDF e extrai o texto
+        loader = LoaderPDF(temp_file_path)  # Passa o caminho temporário
+        extracted_text = loader.extract_text()
+        
+        # Adiciona o conteúdo extraído ao histórico
+        history.append({"role": "system", "content": extracted_text})
+    
     return history
+
 
 
 def process(history):
@@ -82,7 +103,16 @@ def process(history):
 custom_css = """
 #chatbot {
     height: 70vh !important;
+    border: 2px solid #000000;
+    border-radius: 10px;
 }
+
+body {
+    background-image: (r"img/investments.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    }
 """
 
 # Create the Gradio interface
@@ -94,7 +124,7 @@ with gr.Blocks(css=custom_css) as demo:
         elem_id="chatbot",
         bubble_full_width=True,
         height=800,
-        avatar_images=((r"img/user.png"), (r"img/gpt.png")),
+        avatar_images=((r"img/user.png"), (r"img/gpt.png"))
     )
 
     with gr.Row():

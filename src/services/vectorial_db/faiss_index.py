@@ -38,16 +38,20 @@ class FAISSIndex():
         self.index = IndexFlatL2(self.dimension)
     
     def ingest_text(self, text: str | None = None, text_chunks: list | None = None) -> bool:
-        """Ingests text to the faiss index."""
+        """Ingests text to the FAISS index."""
         if not (text_chunks or text):
             raise ValueError("Either text or text_chunks must be provided")
+        
+        # Se não forem passados chunks de texto, vamos gerar usando a função text_to_chunks
         if not text_chunks:
-            #TODO: Improve chunking
-            text_chunks = text_to_chunks(text)
+            text_chunks = text_to_chunks(text)  # Usando a melhoria de chunking
+        
+        # Agora, iteramos sobre os chunks de texto gerados (seja passado ou gerado) para adicionar ao índice
         for chunk in text_chunks:
-            embedding = self.embeddings(chunk)
-            self.index.add(np.array([embedding]).astype('float32'))
-            self.chunks_list += [chunk]
+            embedding = self.embeddings(chunk)  # Gerar a representação vetorial (embedding) do chunk
+            self.index.add(np.array([embedding]).astype('float32'))  # Adicionar o embedding ao índice FAISS
+            self.chunks_list += [chunk]  # Armazenar o chunk na lista de chunks
+        
         return True
     
     def retrieve_chunks(self, query: str, num_chunks: int = 5) -> list:

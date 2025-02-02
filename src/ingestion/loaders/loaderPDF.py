@@ -19,7 +19,7 @@ class LoaderPDF(LoaderBase):
             'producer': doc_info.producer,  
             'subject': doc_info.subject,  
             'title': doc_info.title,  
-            #'number_of_pages': len(doc_info.pages)  
+            'number_of_pages': len(doc_info.pages)  
         }
 
         self.metadata=metadata
