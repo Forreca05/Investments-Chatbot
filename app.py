@@ -13,6 +13,10 @@ llm = LLM()
 embeddings = Embeddings()
 index = FAISSIndex(embeddings=embeddings.get_embeddings)
 
+# Variáveis globais para temperatura e tokens máximos
+current_temperature = 1.0
+current_max_tokens = 800
+
 # Carregar o índice FAISS, ingeste dados se não existir
 try:
     index.load_index()
@@ -63,13 +67,15 @@ def add_user_text(history, txt):
 
 
 def update_temperature(temperature):
-    """Função placeholder para atualizar a temperatura."""
-    return temperature
-
+    """Atualiza a variável global da temperatura."""
+    global current_temperature
+    current_temperature = temperature
 
 def update_max_tokens(max_tokens):
-    """Função placeholder para atualizar os tokens máximos."""
-    return max_tokens
+    """Atualiza a variável global dos tokens máximos."""
+    global current_max_tokens
+    current_max_tokens = max_tokens
+
 
 
 def add_file(history, file_obj):
@@ -97,14 +103,14 @@ def process(history):
 
 
 # Criar a interface Gradio
-with gr.Blocks(css="/home/forreca05/Desktop/UNI/2º Ano/1º Semestre/ACM-GenAI/Session#02/custom.css") as demo:
+with gr.Blocks(theme=gr.themes.Soft(font=[gr.themes.GoogleFont("Roboto"), "Arial", "sans-serif"])) as demo:
     # Elemento de UI do Chatbot
     chatbot_ui = gr.Chatbot(
         [],
         type="messages",
         elem_id="Investment",
         bubble_full_width=True,
-        height=1000,
+        height=950,
         avatar_images=("img/user.png", "img/gpt.png")  # Ajuste conforme as imagens
     )
 
@@ -133,4 +139,4 @@ with gr.Blocks(css="/home/forreca05/Desktop/UNI/2º Ano/1º Semestre/ACM-GenAI/S
     ).then(lambda: gr.Textbox(interactive=True), None, [txt], queue=False)
 
 # Lançar a interface Gradio
-demo.launch()
+demo.launch(share=True, auth=("joao", "ferreira"))
