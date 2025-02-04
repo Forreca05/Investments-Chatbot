@@ -1,19 +1,19 @@
-from main import rag_chatbot
 import gradio as gr
 import time
 import os
+import tempfile
 from src.ingestion.loaders.loaderPDF import LoaderPDF
 from src.ingestion.ingest_files import ingest_files_data_folder
 from src.services.models.embeddings import Embeddings
 from src.services.models.llm import LLM
 from src.services.vectorial_db.faiss_index import FAISSIndex
-import shutil
-# Initialize instances for the LLM, embeddings, and FAISS index
+
+# Inicializar instâncias para o LLM, embeddings e índice FAISS
 llm = LLM()
 embeddings = Embeddings()
 index = FAISSIndex(embeddings=embeddings.get_embeddings)
 
-# Load the FAISS index, ingest data if it doesn't exist
+# Carregar o índice FAISS, ingeste dados se não existir
 try:
     index.load_index()
 except FileNotFoundError:
@@ -23,14 +23,14 @@ except FileNotFoundError:
 
 def chatbot_wrapper(input_text, history):
     """
-    Wrapper function for the chatbot, handling Gradio integration.
+    Função wrapper para o chatbot, integrando com Gradio.
 
     Args:
-        input_text (str): User input text.
-        history (list): Conversation history.
+        input_text (str): Texto de entrada do usuário.
+        history (list): Histórico da conversa.
 
     Returns:
-        tuple: Updated conversation history and a placeholder string.
+        tuple: Histórico atualizado e uma string de placeholder.
     """
     if history is None:
         history = []
@@ -47,14 +47,14 @@ def chatbot_wrapper(input_text, history):
 
 def add_user_text(history, txt):
     """
-    Adds user text to the conversation history.
+    Adiciona o texto do usuário ao histórico da conversa.
 
     Args:
-        history (list): Conversation history.
-        txt (str): User input text.
+        history (list): Histórico da conversa.
+        txt (str): Texto de entrada do usuário.
 
     Returns:
-        tuple: Updated conversation history and user input text.
+        tuple: Histórico atualizado e o texto de entrada do usuário.
     """
     if history is None:
         history = []
@@ -63,14 +63,12 @@ def add_user_text(history, txt):
 
 
 def update_temperature(temperature):
-    """Placeholder function for updating temperature."""
-    # 
+    """Função placeholder para atualizar a temperatura."""
     return temperature
 
 
 def update_max_tokens(max_tokens):
-    """Placeholder function for updating max tokens."""
-    # Not Implemented
+    """Função placeholder para atualizar os tokens máximos."""
     return max_tokens
 
 
@@ -93,63 +91,46 @@ def add_file(history, file_obj):
     return history
 
 
-
 def process(history):
-    """Placeholder function for processing input."""
+    """Função placeholder para processar a entrada."""
     return history
 
 
-# Custom CSS for styling the chatbot
-custom_css = """
-#chatbot {
-    height: 70vh !important;
-    border: 2px solid #000000;
-    border-radius: 10px;
-}
-
-body {
-    background-image: (r"img/investments.png");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    }
-"""
-
-# Create the Gradio interface
-with gr.Blocks(css=custom_css) as demo:
-    # Chatbot UI element
+# Criar a interface Gradio
+with gr.Blocks(css="/home/forreca05/Desktop/UNI/2º Ano/1º Semestre/ACM-GenAI/Session#02/custom.css") as demo:
+    # Elemento de UI do Chatbot
     chatbot_ui = gr.Chatbot(
         [],
         type="messages",
-        elem_id="chatbot",
+        elem_id="Investment",
         bubble_full_width=True,
-        height=800,
-        avatar_images=((r"img/user.png"), (r"img/gpt.png"))
+        height=1000,
+        avatar_images=("img/user.png", "img/gpt.png")  # Ajuste conforme as imagens
     )
 
     with gr.Row():
-        # Text input box
+        # Caixa de texto para entrada
         txt = gr.Textbox(
             scale=4,
             show_label=False,
-            placeholder="Enter text and press enter",
-            container=False,
+            placeholder="Digite o texto e pressione Enter",
+            container=True,
+            interactive=True
         )
 
     with gr.Row():
-        # Sliders for temperature and max tokens
+        # Sliders para temperatura e tokens máximos
         temperature = gr.Slider(0.0, 2, value=1, label="Temperature")
         max_tokens = gr.Slider(1, 1000, value=800, label="Max Tokens")
 
-        # Register slider values (currently placeholder functions)
+        # Registrar os valores dos sliders (funções placeholder)
     t = temperature.release(update_temperature, inputs=[temperature])
     mt = max_tokens.release(update_max_tokens, inputs=[max_tokens])
 
-    # Define the event chain: submit text -> add to history -> call chatbot_wrapper -> clear textbox
+    # Definir a cadeia de eventos: submeter texto -> adicionar ao histórico -> chamar chatbot_wrapper -> limpar a caixa de texto
     txt_msg = txt.submit(add_user_text, [chatbot_ui, txt], [chatbot_ui, txt]).then(
         chatbot_wrapper, [txt, chatbot_ui], [chatbot_ui, txt], queue=False
     ).then(lambda: gr.Textbox(interactive=True), None, [txt], queue=False)
 
-
-# Launch the Gradio interface
+# Lançar a interface Gradio
 demo.launch()
