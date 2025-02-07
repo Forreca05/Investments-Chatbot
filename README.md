@@ -1,8 +1,8 @@
-# Project Name
+# Investment's ChatBot
 
 ## Description
 
-This project demonstrates a Retrieval Augmented Generation (RAG) system for a recruiting business case. The system allows users to query a knowledge base of documents to answer questions and gain insights.
+This project demonstrates a Retrieval Augmented Generation (RAG) system about investments. The system allows users to query a knowledge base of documents to answer questions and gain insights.
 
 ## RAG Architecture Overview
 
@@ -50,7 +50,6 @@ Follow these steps to set up and run the project:
     ```
   This script handles the parsing, chunking, and embedding creation stages.  The resulting index will be saved to disk. Explore the `src/ingestion` directory for the code responsible for these steps.
   
-  **Important**: This step is only implemented for PDF FIles. Please consider implementing the `Loader` classes for the other types of documents that you want to pass to the chatbot (e.g. DOCX).
 
 
 **3. Running the Application**
@@ -71,7 +70,7 @@ Follow these steps to set up and run the project:
 * `src/`:  Contains the source code for the project.
     * `ingestion/`: Code for ingesting and processing documents. Start by ingesting the documents.
     * `services/`: Core services like LLM interaction, embeddings, and vector database.
-* `main.py`: The main application script. Check the `rag_chatbot` function, **implement it!**
+* `main.py`: The main application script.
 * `requirements.txt`:  Lists the project dependencies.
 
 

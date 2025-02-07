@@ -22,3 +22,20 @@ body {
 .gradio-chatbot .message {
     font-family: 'Roboto', sans-serif;
 }
+
+/* CSS Customizado para o botão "Explique Melhor" */
+#explain-button {
+    background-color: #4CAF50;  /* Cor de fundo verde */
+    color: white;               /* Texto branco */
+    font-size: 16px;            /* Tamanho da fonte */
+    padding: 10px 20px;         /* Padding para o botão */
+    border-radius: 8px;         /* Bordas arredondadas */
+    border: none;               /* Remover borda */
+    transition: background-color 0.3s ease;  /* Animação ao passar o mouse */
+}
+
+#explain-button:hover {
+    background-color: #45a049;  /* Cor de fundo quando o mouse passa por cima */
+    cursor: pointer;           /* Mostrar que é clicável */
+}
+
