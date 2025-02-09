@@ -2,6 +2,7 @@ import gradio as gr
 import time
 import os
 import tempfile
+import buttons
 from src.ingestion.loaders.loaderPDF import LoaderPDF
 from src.ingestion.ingest_files import ingest_files_data_folder
 from src.services.models.embeddings import Embeddings
@@ -46,17 +47,6 @@ def add_user_text(history, txt):
     return history, txt
 
 
-def update_temperature(temperature):
-    """Atualiza a variável global da temperatura."""
-    global current_temperature
-    current_temperature = temperature
-
-
-def update_max_tokens(max_tokens):
-    """Atualiza a variável global dos tokens máximos."""
-    global current_max_tokens
-    current_max_tokens = max_tokens
-
 
 def add_file(history, file_obj):
     """Processa o upload de arquivos e adiciona o conteúdo ao histórico."""
@@ -70,48 +60,6 @@ def add_file(history, file_obj):
         
         history.append({"role": "system", "content": extracted_text})
     
-    return history
-
-
-def explain_better(history):
-    """Pede ao LLM para gerar uma explicação mais detalhada da última resposta."""
-    if not history or history[-1]["role"] != "assistant":
-        return history  # Se não houver resposta do chatbot, não faz nada
-
-    last_response = history[-1]["content"]
-    prompt = f"Explique de forma mais detalhada a seguinte resposta: {last_response}"
-
-    detailed_response = llm.get_response(history, "Explique melhor", prompt)
-
-    history.append({"role": "assistant", "content": detailed_response[0]["content"]})
-    return history
-
-
-def summarize(history):
-    """Pede ao LLM para resumir a última resposta."""
-    if not history or history[-1]["role"] != "assistant":
-        return history
-
-    last_response = history[-1]["content"]
-    prompt = f"Resuma a seguinte resposta de forma concisa: {last_response}"
-
-    summary = llm.get_response(history, "Resumo", prompt)
-
-    history.append({"role": "assistant", "content": summary[0]["content"]})
-    return history
-
-
-def generate_example(history):
-    """Gera um exemplo baseado na última resposta."""
-    if not history or history[-1]["role"] != "assistant":
-        return history
-
-    last_response = history[-1]["content"]
-    prompt = f"Dê um exemplo prático baseado na seguinte resposta: {last_response}"
-
-    example = llm.get_response(history, "Exemplo", prompt)
-
-    history.append({"role": "assistant", "content": example[0]["content"]})
     return history
 
 
@@ -141,8 +89,10 @@ with gr.Blocks(theme=gr.themes.Soft(font=[gr.themes.GoogleFont("Roboto"), "Arial
         temperature = gr.Slider(0.0, 2, value=1, label="Temperature")
         max_tokens = gr.Slider(1, 1000, value=800, label="Max Tokens")
 
-    t = temperature.release(update_temperature, inputs=[temperature])
-    mt = max_tokens.release(update_max_tokens, inputs=[max_tokens])
+    # Passando as funções de atualização corretamente para o release dos sliders
+    t = temperature.release(buttons.update_temperature, inputs=[temperature], outputs=[])
+    mt = max_tokens.release(buttons.update_max_tokens, inputs=[max_tokens], outputs=[])
+
 
     # Botões "Explicar Melhor", "Resumo" e "Exemplo"
     with gr.Row():
@@ -156,9 +106,9 @@ with gr.Blocks(theme=gr.themes.Soft(font=[gr.themes.GoogleFont("Roboto"), "Arial
     ).then(lambda: gr.Textbox(interactive=True), None, [txt], queue=False)
 
     # Eventos dos botões
-    explain_button.click(explain_better, [chatbot_ui], [chatbot_ui])
-    summarize_button.click(summarize, [chatbot_ui], [chatbot_ui])
-    example_button.click(generate_example, [chatbot_ui], [chatbot_ui])
+    explain_button.click(buttons.explain_better, [chatbot_ui], [chatbot_ui])
+    summarize_button.click(buttons.summarize, [chatbot_ui], [chatbot_ui])
+    example_button.click(buttons.generate_example, [chatbot_ui], [chatbot_ui])
 
 # Lançar a interface Gradio
 demo.launch(share=True, auth=("joao", "ferreira"))
