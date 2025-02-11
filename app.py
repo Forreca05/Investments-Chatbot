@@ -72,7 +72,6 @@ def add_file(history, file_obj):
     
     return history
 
-
 # Criar a interface Gradio
 with gr.Blocks(theme=gr.themes.Soft(font=[gr.themes.GoogleFont("Roboto"), "Arial", "sans-serif"]), css="custom_css") as demo:
     
