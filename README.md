@@ -76,3 +76,4 @@ Follow these steps to set up and run the project:
 
 ## Further improvements
 * Added three buttons to resume, generate ecamples and explain better.
+* Added a button to recover history.
