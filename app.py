@@ -123,5 +123,5 @@ with gr.Blocks(theme=gr.themes.Soft(font=[gr.themes.GoogleFont("Roboto"), "Arial
     example_button.click(buttons.generate_example, [chatbot_ui], [chatbot_ui])
     use_history_button.click(use_saved_history, [], [chatbot_ui])
 
-# Lançar a interface Gradio com o cleanup após a sessão
-demo.launch(share=True, auth=("joao", "ferreira"))  # Limpeza após o fechamento da interface
+# Lançar a interface Gradio
+demo.launch()
